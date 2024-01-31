@@ -4,19 +4,33 @@ import 'package:taskati_app/core/utils/app_colors.dart';
 
 TextStyle getHeadlineStyle({double fontsize = 18}) {
   return TextStyle(
-    fontFamily: GoogleFonts.poppins().fontFamily,
-    fontSize: fontsize,
-    color: AppColors.primaryColor,
-    fontWeight: FontWeight.bold,
-  );
+      fontSize: fontsize,
+      color: AppColors.primaryColor,
+      fontWeight: FontWeight.bold,
+      fontFamily: GoogleFonts.aBeeZee().fontFamily);
 }
 
-TextStyle getTitleStyle({Color color = Colors.black, double fontSize = 18}) {
+TextStyle getBodyStyle(
+    {double fontSize = 16,
+    FontWeight fontWeight = FontWeight.normal,
+    Color color = Colors.black}) {
   return TextStyle(
-    fontSize: fontSize,
-    color: color,
-    fontWeight: FontWeight.bold,
-  );
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      fontFamily: GoogleFonts.poppins().fontFamily);
+}
+
+TextStyle getTitleStyle({
+  Color color = const Color(0xff4E5AE8),
+  double fontSize = 18,
+  FontWeight fontWeight = FontWeight.bold,
+}) {
+  return TextStyle(
+      fontSize: fontSize,
+      color: color,
+      fontWeight: fontWeight,
+      fontFamily: GoogleFonts.poppins().fontFamily);
 }
 
 TextStyle getSubTitleStyle(
@@ -27,10 +41,14 @@ TextStyle getSubTitleStyle(
   );
 }
 
-TextStyle getSmallTextStyle(
-    {double fontSize = 14, Color color = AppColors.ashGray}) {
+TextStyle getSmallTextStyle({
+  double fontSize = 14,
+  Color color = AppColors.ashGray,
+  FontWeight fontWeight = FontWeight.normal,
+}) {
   return TextStyle(
-    fontSize: fontSize,
-    color: color,
-  );
+      fontSize: fontSize,
+      color: color,
+      fontWeight: fontWeight,
+      fontFamily: GoogleFonts.poppins().fontFamily);
 }

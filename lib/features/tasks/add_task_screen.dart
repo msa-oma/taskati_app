@@ -163,7 +163,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       });
                     },
                     child: CircleAvatar(
-                      backgroundColor: AppColors.orange,
+                      backgroundColor: AppColors.warmOrange,
                       radius: 20,
                       child: (_selectedColor == 1)
                           ? const Icon(
@@ -181,7 +181,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       });
                     },
                     child: CircleAvatar(
-                      backgroundColor: AppColors.pink,
+                      backgroundColor: AppColors.pinkishRed,
                       radius: 20,
                       child: (_selectedColor == 2)
                           ? const Icon(
