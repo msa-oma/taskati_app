@@ -28,9 +28,7 @@ class MyElevatedButton extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(
-            color: AppColors.white,
-            fontFamily: GoogleFonts.poppins().fontFamily),
+        style: Theme.of(context).textTheme.displaySmall,
       ),
     );
   }

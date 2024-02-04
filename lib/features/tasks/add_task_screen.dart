@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
+import 'package:taskati_app/core/model/task_model.dart';
 import 'package:taskati_app/core/utils/app_colors.dart';
+import 'package:taskati_app/core/utils/text_styles.dart';
 import 'package:taskati_app/core/widgets/my_custom_btn.dart';
 import 'package:taskati_app/core/widgets/my_custom_tffild.dart';
+import 'package:taskati_app/features/home/home_screen.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -12,20 +17,33 @@ class AddTaskScreen extends StatefulWidget {
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
+  String date = DateFormat.yMd().format(DateTime.now());
+  String startTime = DateFormat('hh:mm a').format(DateTime.now());
+  String endTime = DateFormat('hh:mm a')
+      .format(DateTime.now().add(const Duration(minutes: 15)));
   int _selectedColor = 0;
+  // int colorIndex=1;
+
+  var titleController = TextEditingController();
+  var noteController = TextEditingController();
+
+  late Box<TaskModel> taskBox;
+
+  @override
+  void initState() {
+    super.initState();
+    taskBox = Hive.box('task');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Add Task',
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              color: AppColors.primaryColor),
+          style: getHeadlineStyle(fontsize: 22),
         ),
-        backgroundColor: AppColors.white,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
@@ -44,57 +62,63 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             children: [
               //
               // Title
-              const Text(
+              Text(
                 'Title',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                style: getTitleStyle(),
               ),
               const Gap(3),
-              const CustomTextFormFild(
+              CustomTextFormFild(
+                controller: titleController,
                 hintText: 'Enter title here',
               ),
               const Gap(10),
 
               //Note
-              const Text(
+              Text(
                 'Note',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                style: getTitleStyle(),
               ),
               const Gap(3),
-              const CustomTextFormFild(
+              CustomTextFormFild(
+                controller: noteController,
+                maxLines: 4,
                 hintText: 'Enter note here',
               ),
               const Gap(10),
-
               //Date
-              const Text(
+              Text(
                 'Date',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                style: getTitleStyle(),
               ),
               const Gap(5),
               CustomTextFormFild(
-                hintText: '10/30/2023',
+                readOnly: true,
+                hintText: date,
                 icon: IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    showDateDialog();
+                  },
                   icon: const Icon(
-                    Icons.date_range,
-                    color: AppColors.ashGray,
+                    Icons.calendar_month,
+                    //  color: AppColors.primaryColor,
                   ),
                 ),
               ),
               const Gap(12),
 
               //Start and End time
-              const Row(
+              Row(
                 children: [
                   Expanded(
                       child: Text(
                     'Start Time',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                    style: getTitleStyle(),
                   )),
+                  const Gap(10),
                   Expanded(
                       child: Text(
                     'End Time',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                    style: getTitleStyle(),
                   )),
                 ],
               ),
@@ -104,26 +128,30 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   Expanded(
                     child: CustomTextFormFild(
                       readOnly: true,
-                      hintText: '02:30 AM',
+                      hintText: startTime,
                       icon: IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          showStartTimeDialog();
+                        },
                         icon: const Icon(
                           Icons.access_time,
-                          color: AppColors.ashGray,
+                          // color: AppColors.ashGray,
                         ),
                       ),
                     ),
                   ),
-                  const Gap(6),
+                  const Gap(10),
                   Expanded(
                     child: CustomTextFormFild(
                       readOnly: true,
-                      hintText: '02:45 AM',
+                      hintText: endTime,
                       icon: IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          showEndTimeDialog();
+                        },
                         icon: const Icon(
                           Icons.access_time,
-                          color: AppColors.ashGray,
+                          //   color: AppColors.ashGray,
                         ),
                       ),
                     ),
@@ -195,15 +223,113 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   const Spacer(),
                   MyElevatedButton(
                       text: 'Ceate Task',
-                      onPressed: () {},
+                      onPressed: () {
+                        String id =
+                            '${titleController.text}${DateTime.now().microsecond}';
+
+                        taskBox.put(
+                          id, //task key
+                          TaskModel(
+                              id: id,
+                              title: titleController.text,
+                              note: noteController.text,
+                              date: date,
+                              startTime: startTime,
+                              endTime: endTime,
+                              color: _selectedColor,
+                              isCompleted: false),
+                        );
+
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (contex) {
+                          return const HomeScreen();
+                        }));
+                      },
                       width: 130,
                       hight: 45)
                 ],
-              ) //
+              )
             ],
           ),
         ),
       ),
     );
+  }
+
+  showDateDialog() async {
+    var pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2050));
+
+    if (pickedDate != null) {
+      setState(() {
+        date = DateFormat.yMd().format(pickedDate);
+      });
+    }
+  }
+
+  showStartTimeDialog() async {
+    var starTimePicked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      // builder: (context, child) {
+      //   return Theme(
+      //     data: ThemeData(
+      //          timePickerTheme: TimePickerThemeData(
+      //              helpTextStyle: const TextStyle(color: AppColors.primaryColor),
+      //              backgroundColor: Theme.of(context).scaffoldBackgroundColor),
+      //          colorScheme: ColorScheme.light(
+      //            background: Theme.of(context).scaffoldBackgroundColor,
+      //            primary: AppColors.primaryColor, // header background color
+      //            secondary: Theme.of(context).primaryColor,
+      //            onSecondary: Theme.of(context).primaryColor,
+      //            onPrimary: Theme.of(context).primaryColor, // header text color
+      //            onSurface: Theme.of(context).primaryColor, // body text color
+      //            surface: Theme.of(context).primaryColor, // body text color
+      //          ),
+      //          textButtonTheme: TextButtonThemeData(
+      //            style: TextButton.styleFrom(
+      //              foregroundColor: AppColors.primaryColor, // button text color
+      //            ),
+      //          ),
+      //         ),
+      //     child: child!,
+      //   );
+      // },
+    );
+
+    if (starTimePicked != null) {
+      setState(() {
+        startTime = starTimePicked.format(context);
+        int startMin = starTimePicked.minute;
+        //The endTime is 15 minutes, more than the start time
+        // in case no endTime is specified
+        if ((startMin + 15) > 60) {
+          int startHour = starTimePicked.hour;
+          int rMin = startMin + 15 - 60;
+          endTime = starTimePicked
+              .replacing(hour: startHour + 1, minute: rMin)
+              .format(context);
+        } else {
+          endTime =
+              starTimePicked.replacing(minute: startMin + 15).format(context);
+        }
+      });
+    }
+  }
+
+// u can determine specific endTime
+  showEndTimeDialog() async {
+    var endTimePicked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (endTimePicked != null) {
+      setState(() {
+        endTime = endTimePicked.format(context);
+      });
+    }
   }
 }

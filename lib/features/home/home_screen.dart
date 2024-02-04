@@ -1,12 +1,16 @@
 import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:taskati_app/core/model/task_model.dart';
 import 'package:taskati_app/core/utils/app_colors.dart';
 import 'package:taskati_app/core/utils/text_styles.dart';
 import 'package:taskati_app/core/widgets/custom_btn.dart';
 import 'package:taskati_app/features/home/widgets/home_header.dart';
 import 'package:taskati_app/features/tasks/add_task_screen.dart';
+
+import 'widgets/task_item_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +20,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String selectedDate = DateFormat.yMd().format(DateTime.now());
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -36,18 +42,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         DateFormat.yMMMMd().format(DateTime.now()),
-                        style: getTitleStyle(color: AppColors.black),
+                        style: Theme.of(context).textTheme.displayMedium,
                       ),
                       Text(
                         'Today',
-                        style: getTitleStyle(color: AppColors.black),
+                        style: Theme.of(context).textTheme.displayMedium,
+                        //style: getTitleStyle(color: AppColors.black),
                       ),
                     ],
                   ),
                   const Spacer(),
                   SizedBox(
                     height: 45,
-                    width: 120,
+                    width: 130,
                     child: CustomButton(
                       text: '+ Add Task',
                       onPressed: () {
@@ -60,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const Gap(20),
+              //The Horizontal Date Picker Slider
               DatePicker(
                 DateTime.now(),
                 height: 100,
@@ -67,77 +75,134 @@ class _HomeScreenState extends State<HomeScreen> {
                 initialSelectedDate: DateTime.now(),
                 selectionColor: AppColors.primaryColor,
                 selectedTextColor: Colors.white,
+                dateTextStyle: const TextStyle().copyWith(
+                    color: Theme.of(context).primaryColor, fontSize: 24),
+                monthTextStyle: const TextStyle().copyWith(
+                    color: Theme.of(context).primaryColor, fontSize: 10),
+                dayTextStyle: const TextStyle().copyWith(
+                    color: Theme.of(context).primaryColor, fontSize: 10),
                 onDateChange: (date) {
                   // New date selected
-                  // setState(() {
-                  //   _selectedValue = date;
-                  // });
+                  setState(() {
+                    selectedDate = DateFormat.yMd().format(date);
+                  });
                 },
               ),
 
               // Tasks List
-
               Expanded(
-                  child: ListView.builder(
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(15)),
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Flutter Task 1',
-                              style: getBodyStyle(color: AppColors.white),
-                            ),
-                            const Gap(5),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.watch_later_outlined,
-                                  color: AppColors.white,
-                                ),
-                                const Gap(10),
-                                Text(
-                                  '12:00 - 12:00',
-                                  style:
-                                      getSmallTextStyle(color: AppColors.white),
-                                )
-                              ],
-                            ),
-                            const Gap(5),
-                            Text(
-                              'Flutter Task note ',
-                              style: getBodyStyle(color: AppColors.white),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Container(
-                          width: .6,
-                          height: 60,
-                          color: AppColors.white,
-                        ),
-                        const Gap(5),
-                        RotatedBox(
-                          quarterTurns: 1,
-                          child: Text(
-                            'TODO',
-                            style: getTitleStyle(
-                                color: AppColors.white, fontSize: 14),
-                          ),
-                        )
-                      ],
-                    ),
-                  );
-                },
-              ))
+                child: ValueListenableBuilder(
+                  valueListenable: Hive.box<TaskModel>('task').listenable(),
+                  builder: (context, Box<TaskModel> taskValue, child) {
+                    List<TaskModel> tasks = [];
+                    for (var element in taskValue.values) {
+                      if (selectedDate == element.date) {
+                        tasks.add(element);
+                      }
+                    }
+                    return tasks.isNotEmpty
+                        ? ListView.builder(
+                            itemCount: tasks.length,
+                            itemBuilder: (context, index) {
+                              TaskModel task = tasks[index];
+
+                              return Dismissible(
+                                  key: UniqueKey(),
+                                  onDismissed: (direction) {
+                                    if (direction ==
+                                        DismissDirection.startToEnd) {
+                                      //complete
+                                      taskValue.put(
+                                          task.id,
+                                          TaskModel(
+                                              id: task.id,
+                                              title: task.title,
+                                              note: task.note,
+                                              date: task.date,
+                                              startTime: task.startTime,
+                                              endTime: task.endTime,
+                                              color: 3,
+                                              isCompleted: true));
+                                    } else {
+                                      //delete "from DB"
+                                      taskValue.delete(task.id);
+                                    }
+                                  },
+                                  //delete task
+                                  secondaryBackground: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    margin: const EdgeInsets.all(25),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      color: AppColors.pinkishRed,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          ' Delete ',
+                                          style: getHeadlineStyle()
+                                              .copyWith(color: AppColors.white),
+                                        ),
+                                        const Icon(
+                                          Icons.delete,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  //task completed
+                                  background: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    margin: const EdgeInsets.all(25),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      color: Colors.green.shade400,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          ' Complete ',
+                                          style: getHeadlineStyle()
+                                              .copyWith(color: AppColors.white),
+                                        ),
+                                        const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  child: TaskCard(task: task));
+                            },
+                          )
+                        : Center(
+                            child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset('assets/empty.png'),
+                                  const Gap(15),
+                                  Text(
+                                    'you don\'t have any task yet!',
+                                    style: getHeadlineStyle(fontsize: 16),
+                                  ),
+                                  const Gap(10),
+                                  Text(
+                                    '   Add some   🚀',
+                                    style: getHeadlineStyle(fontsize: 16),
+                                  ),
+                                  const Gap(25),
+                                ]),
+                          );
+                  },
+                ),
+              )
             ],
           ),
         ),
@@ -145,152 +210,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:gap/gap.dart';
-// import 'package:intl/intl.dart';
-// import 'package:taskati_app/core/utils/app_colors.dart';
-// import 'package:taskati_app/core/utils/text_styles.dart';
-// import 'package:taskati_app/core/widgets/custom_btn.dart';
-// import 'package:taskati_app/features/home/widgets/home_header.dart';
-// import 'package:taskati_app/features/tasks/add_task_screen.dart';
-// import 'package:date_picker_timeline/date_picker_widget.dart';
-
-// class HomeScreen extends StatelessWidget {
-//   const HomeScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SafeArea(
-//       child: Scaffold(
-//         body: Padding(
-//           padding: const EdgeInsets.all(20),
-//           child: Column(
-//             children: [
-//               //   const HomeHeader(),
-//               const Gap(20),
-//               Row(
-//                 children: [
-//                   Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Text(
-//                           DateFormat.yMMMMd().format(DateTime.now()),
-//                           style: getTitleStyle(color: AppColors.black),
-//                         ),
-//                         Text(
-//                           'Today',
-//                           style: getTitleStyle(color: AppColors.black),
-//                         ),
-//                       ]),
-//                   const Spacer(),
-//                   SizedBox(
-//                     height: 45,
-//                     width: 120,
-//                     child: CustomButton(
-//                       text: '+ Add Task',
-//                       onPressed: () => Navigator.of(context).push(
-//                         MaterialPageRoute(
-//                           builder: (context) => const AddTaskScreen(),
-//                         ),
-//                       ),
-//                     ),
-//                   )
-//                 ],
-//               ),
-//               const Gap(20),
-//               DatePicker(
-//                 DateTime.now(),
-//                 height: 100,
-//                 width: 80,
-//                 initialSelectedDate: DateTime.now(),
-//                 selectionColor: AppColors.primaryColor,
-//                 selectedTextColor: Colors.white,
-//                 onDateChange: (date) {
-//                   // New date selected
-//                   // setState(() {
-//                   //   _selectedValue = date;
-//                   // });
-//                 },
-//               ),
-
-//               //tasks list
-//               Expanded(
-//                   child: ListView.builder(
-//                 itemCount: 3,
-//                 itemBuilder: (context, index) {
-//                   return Container(
-//                     margin: const EdgeInsets.only(top: 10),
-//                     padding: const EdgeInsets.all(10),
-//                     decoration: BoxDecoration(
-//                         color: AppColors.primaryColor,
-//                         borderRadius: BorderRadius.circular(15)),
-//                     child: Row(
-//                       children: [
-//                         Column(
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: [
-//                             Text(
-//                               'Flutter Task 1',
-//                               style: getBodyStyle(color: AppColors.white),
-//                             ),
-//                             const Gap(5),
-//                             Row(
-//                               children: [
-//                                 const Icon(
-//                                   Icons.watch_later_outlined,
-//                                   color: AppColors.white,
-//                                 ),
-//                                 const Gap(10),
-//                                 Text(
-//                                   '12:00 - 12:00',
-//                                   style:
-//                                       getSmallTextStyle(color: AppColors.white),
-//                                 )
-//                               ],
-//                             ),
-//                             const Gap(5),
-//                             Text(
-//                               'Flutter Task 1 noteeeeee',
-//                               style: getBodyStyle(color: AppColors.white),
-//                             ),
-//                           ],
-//                         ),
-//                         const Spacer(),
-//                         Container(
-//                           width: .5,
-//                           height: 60,
-//                           color: AppColors.white,
-//                         ),
-//                         const Gap(5),
-//                         RotatedBox(
-//                           quarterTurns: 3,
-//                           child: Text(
-//                             'TODO',
-//                             style: getTitleStyle(
-//                                 color: AppColors.white, fontSize: 14),
-//                           ),
-//                         )
-//                       ],
-//                     ),
-//                   );
-//                 },
-//               ))
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }

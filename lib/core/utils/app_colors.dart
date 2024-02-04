@@ -9,6 +9,6 @@ class AppColors {
   static const Color jetBlack = Color(0xff121212); //bg for dark mode
   static const Color ashGray = Color(0xffB4AAAA);
   //
-  static const Color white = Color(0xffffffff); // \_/
+  static const Color white = Color(0xffffffff); // \_/   lightBg
   static const Color black = Color(0xff000000); // \_/
 }

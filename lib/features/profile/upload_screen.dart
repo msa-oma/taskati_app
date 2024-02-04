@@ -4,10 +4,11 @@ import 'package:gap/gap.dart';
 import 'package:taskati_app/core/network/local_storage.dart';
 import 'package:taskati_app/core/utils/app_colors.dart';
 import 'package:taskati_app/core/utils/text_styles.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:taskati_app/core/widgets/custom_error_dialog.dart';
 import 'package:taskati_app/core/widgets/my_custom_btn.dart';
 import 'package:taskati_app/features/home/home_screen.dart';
+
+import 'Widgets/show_dialogs.dart';
 
 String? imagePath;
 String name = '';
@@ -72,7 +73,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   width: 200,
                   hight: 42,
                   onPressed: () {
-                    uploadImageFromGallery();
+                    uploadImageFromCamera();
                   },
                 ),
                 const Gap(10),
@@ -123,27 +124,5 @@ class _UploadScreenState extends State<UploadScreen> {
         ),
       ),
     );
-  }
-
-  uploadImageFromCamera() async {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.camera);
-
-    if (pickedImage != null) {
-      setState(() {
-        imagePath = pickedImage.path;
-      });
-    }
-  }
-
-  uploadImageFromGallery() async {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-
-    if (pickedImage != null) {
-      setState(() {
-        imagePath = pickedImage.path;
-      });
-    }
   }
 }

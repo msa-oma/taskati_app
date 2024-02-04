@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:taskati_app/core/network/local_storage.dart';
-import 'package:taskati_app/core/utils/text_styles.dart';
+import 'package:taskati_app/core/utils/app_colors.dart';
 import 'package:taskati_app/features/profile/profile_screen.dart';
 
 class HomeHeader extends StatefulWidget {
@@ -32,18 +32,24 @@ class _HomeHeaderState extends State<HomeHeader> {
           children: [
             Text(
               'Hello, $name',
-              style: getTitleStyle(),
+              style: Theme.of(context)
+                  .textTheme
+                  .displayLarge
+                  ?.copyWith(color: AppColors.primaryColor),
             ),
             Text(
-              'Have A Nice Day',
-              style: getBodyStyle(),
+              ' Have A Nice Day',
+              style: Theme.of(context)
+                  .textTheme
+                  .displayLarge
+                  ?.copyWith(color: AppColors.primaryColor),
             ),
           ],
         ),
         const Spacer(),
         GestureDetector(
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (context) => const ProfileScreen(),
             ));
           },
