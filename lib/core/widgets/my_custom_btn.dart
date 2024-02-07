@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:taskati_app/core/utils/app_colors.dart';
 
 class MyElevatedButton extends StatelessWidget {

@@ -91,8 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     right: 0,
                     child: IconButton(
                         color: AppColors.primaryColor,
-                        //TODO: add functinalty to edite user image
-
                         onPressed: () {
                           showImageDialog(context, onTapCamera: () async {
                             await uploadImageFromCamera().then((value) {
@@ -144,7 +142,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  //TODO: add functinalty to edite user name
                   child: IconButton(
                       onPressed: () {
                         showNameDialog(context, name);

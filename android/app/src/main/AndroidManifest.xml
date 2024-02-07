@@ -5,7 +5,7 @@
 <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application
-        android:label="taskati_app"
+        android:label="Taskati"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
