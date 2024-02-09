@@ -94,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onPressed: () {
                           showImageDialog(context, onTapCamera: () async {
                             await uploadImageFromCamera().then((value) {
-                              // setState(() {});
+                              setState(() {});
 
                               Navigator.of(context).pop();
 
@@ -105,7 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             });
                           }, onTapGallery: () async {
                             await uploadImageFromGallery().then((value) {
-                              // setState(() {});
+                              setState(() {});
                               Navigator.of(context).pop();
                               Navigator.of(context)
                                   .pushReplacement(MaterialPageRoute(

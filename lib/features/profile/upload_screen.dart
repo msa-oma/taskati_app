@@ -10,7 +10,8 @@ import 'package:taskati_app/features/home/home_screen.dart';
 
 import 'Widgets/show_dialogs.dart';
 
-String? imagePath;
+//String? imagePath;
+String? _imagePath;
 String name = '';
 
 class UploadScreen extends StatefulWidget {
@@ -31,17 +32,17 @@ class _UploadScreenState extends State<UploadScreen> {
             style: getHeadlineStyle(),
           ),
           onPressed: () {
-            if (imagePath != null && name.isNotEmpty) {
-              AppLocal.cacheData(AppLocal.imageKey, imagePath);
+            if (_imagePath != null && name.isNotEmpty) {
+              AppLocal.cacheData(AppLocal.imageKey, _imagePath);
               AppLocal.cacheData(AppLocal.nameKey, name);
               AppLocal.cacheData(AppLocal.isUploadKey, true);
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (context) => const HomeScreen(),
               ));
-            } else if (imagePath == null && name.isNotEmpty) {
+            } else if (_imagePath == null && name.isNotEmpty) {
               showErrorDialog(context, 'Please Upload Your image');
-            } else if (imagePath != null && name.isEmpty) {
+            } else if (_imagePath != null && name.isEmpty) {
               showErrorDialog(context, 'Enter Your Name');
             } else {
               showErrorDialog(
@@ -61,8 +62,8 @@ class _UploadScreenState extends State<UploadScreen> {
                 CircleAvatar(
                   radius: 60,
                   backgroundColor: AppColors.primaryColor,
-                  foregroundImage: (imagePath != null)
-                      ? FileImage(File(imagePath!)) as ImageProvider
+                  foregroundImage: (_imagePath != null)
+                      ? FileImage(File(_imagePath!)) as ImageProvider
                       : const AssetImage(
                           'assets/user.png',
                         ),
@@ -72,15 +73,25 @@ class _UploadScreenState extends State<UploadScreen> {
                   text: ' upload from camera ',
                   width: 200,
                   hight: 42,
-                  onPressed: () {
-                    uploadImageFromCamera();
+                  // onPressed: () {
+                  //   uploadImageFromCamera();
+                  // },
+                  onPressed: () async {
+                    var imagePath = await uploadImageFromCamera();
+                    _imagePath = imagePath;
+                    setState(() {});
                   },
                 ),
                 const Gap(10),
                 MyElevatedButton(
                     text: 'upload from Gallery',
-                    onPressed: () {
-                      uploadImageFromGallery();
+                    // onPressed: () {
+                    //   uploadImageFromGallery();
+                    // },
+                    onPressed: () async {
+                      var imagePath = await uploadImageFromGallery();
+                      _imagePath = imagePath;
+                      setState(() {});
                     },
                     width: 200,
                     hight: 42),
